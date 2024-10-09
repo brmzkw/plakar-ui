@@ -1,29 +1,69 @@
-# Create T3 App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Features:
 
-## What's next? How do I make an app with this?
+- list of snapshots
+- for each snapshot, list of files in a table
+  - name
+  - mode
+  - uid
+  - gid
+  - date
+  - size
+- for each file, informations
+  - metadata
+    - checksum 
+    - content type
+    - name
+    - size
+    - mode
+    - uid
+    - gid
+    - device
+    - inode
+    - modification time
+  - structure
+    - chunk
+    - length 
+  - download button
+  - raw file content
+  - highlight file content
+- list of file kinds
+  - kind
+  - count: count among all snapshots
+  - ratio
+- for each kind
+  - snapshot where the kind if found
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+The UI currently has the following views:
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+* Snapshots list: to browse through the files in each snapshot
+* File kind/mime-type/etensions: shows files of a specific type. If the file exists in multiple snapshots, it’ll appear multiple times
+* Search: to search for a file by name. If it’s in several snapshots, it will show up multiple times
 
-## Learn More
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Snapshots View
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+* Shows the list of snapshots, the most recent first
+* Each snapshot displays the file list by name as the default view
+* You can switch tabs to view files by kind/mime-type/extensions
+* The "diff mode" setting can be toogled to compare the current snapshot with another one (defaulting to the previous snapshot).
+* A search input to look for files by name within the current snapshot
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+Global Search
 
-## How do I deploy this?
+* To search for files by name across all snapshots.
+* If the file exists in multiple snapshots, only the latest one shows up by default
+* In the file details, you'll see a list of snapshots where the file appears
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+
+
+-----
+
+| Search | 
+
+Snapshos
+
+DATE | UUID | Hostname | Path | Stats
+
+xxx | xxx | julien@localhost | /bin | 3 dirs, 17 files, 17MB
