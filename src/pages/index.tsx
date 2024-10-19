@@ -65,29 +65,24 @@ export default function SnapshotsListPage({}) {
 
   // Hook to enter in a snapshot
   useEffect(() => {
-    const handleKeyDown = async (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (!data || selected === undefined) {
         return;
       }
       switch (event.key) {
         case "ArrowRight":
         case "Enter":
-        case " ":
           const snapshot = data.Headers[selected];
           if (!snapshot) {
             return;
           }
-          await router.push(`/snapshots/${snapshot.IndexID}`);
+          router.push(`/snapshots/${snapshot.IndexID}`).catch(console.error);
           break;
       }
     };
-    window.addEventListener("keydown", () => {
-      return handleKeyDown;
-    });
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", () => {
-        return handleKeyDown;
-      });
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selected, data, router]);
 
