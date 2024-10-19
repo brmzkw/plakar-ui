@@ -24,16 +24,21 @@ function FilePreview({ file }: FilePreviewProps) {
       </p>
     );
   }
+  console.log(file.rootdir);
   return (
-    <>
+    <div className="h-full">
       <h1 className="text-xl font-bold">{file.info.Name}</h1>
-      <div className="min-h-full bg-red-300">xx</div>
-      {/* <iframe src="http://localhost:30112/raw/16d5fab3-1494-4848-9433-c1d5d586ba4a:/Users/niluje/Desktop/screens/Screenshot%202024-10-19%20at%2022.08.29.png"></iframe> */}
-    </>
+      <iframe
+        className="h-full w-full"
+        src={`http://localhost:30112/raw/${file.snapshotId}:${file.rootdir}${file.info.Name}`}
+      ></iframe>
+    </div>
   );
 }
 
 type TreeEntryType = {
+  snapshotId: string;
+  rootdir: string;
   type: "directory" | "file" | "symlink";
   info: Directory;
 };
@@ -55,14 +60,20 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
 
       const tree: TreeEntryType[] = [
         ...apiResponse.Directories.map((entry) => ({
+          snapshotId,
+          rootdir: path,
           type: "directory" as TreeEntryType["type"],
           info: entry,
         })),
         ...apiResponse.Files.map((entry) => ({
+          snapshotId,
+          rootdir: path,
           type: "file" as TreeEntryType["type"],
           info: entry,
         })),
         ...apiResponse.Symlinks.map((entry) => ({
+          snapshotId,
+          rootdir: path,
           type: "symlink" as TreeEntryType["type"],
           info: entry,
         })),
@@ -198,8 +209,8 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <table className="w-full flex-1 border-separate border-spacing-0 rounded-md border-t-4 border-gray-700 text-left text-sm text-gray-600">
+    <div className="flex min-h-[50vh] flex-wrap gap-2">
+      <table className="h-full w-full flex-1 border-separate border-spacing-0 rounded-md border-t-4 border-gray-700 text-left text-sm text-gray-600">
         <thead className="bg-gray-700 text-xs uppercase text-white">
           <tr>
             <th className="px-2 py-2">Name</th>
