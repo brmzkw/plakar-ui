@@ -249,13 +249,15 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
               </td>
               <td className="py-2">{ModeForDisplay(entry.info.Mode)}</td>
               <td className="px-2 py-2 hover:scale-125">
-                <GoSearch
-                  onClick={(e) => {
-                    setShowPreview(true);
-                    setSelectedIndex(idx);
-                    e.stopPropagation();
-                  }}
-                />
+                {entry.type === "file" && (
+                  <GoSearch
+                    onClick={(e) => {
+                      setShowPreview(true);
+                      setSelectedIndex(idx);
+                      e.stopPropagation();
+                    }}
+                  />
+                )}
               </td>
             </tr>
           ))}
