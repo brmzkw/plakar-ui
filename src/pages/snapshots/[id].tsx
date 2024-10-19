@@ -69,8 +69,10 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
     },
   });
 
-  const selected =
-    (selectedIndex !== undefined && data?.[selectedIndex]) ?? undefined;
+  let selected: TreeEntryType | undefined;
+  if (selectedIndex !== undefined && data?.[selectedIndex]) {
+    selected = data[selectedIndex];
+  }
 
   // Hook to change the current selection.
   useEffect(() => {
