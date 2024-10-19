@@ -3,7 +3,7 @@ import classNames from "classnames";
 import prettyBytes from "pretty-bytes";
 import type { Directory } from "~/api/types/browse";
 import { DateForDisplay, ModeForDisplay } from "~/utils/display";
-import { GoFile, GoFileDirectoryFill, GoLink } from "react-icons/go";
+import { GoFile, GoFileDirectoryFill, GoLink, GoSearch } from "react-icons/go";
 import { browseSnapshot } from "~/api/snapshots";
 import { useCallback, useRef } from "react";
 import { useEffect, useState } from "react";
@@ -234,7 +234,16 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
               <td className="py-2">
                 {DateForDisplay(new Date(entry.info.ModTime))}
               </td>
-              <td className="px-2 py-2">{ModeForDisplay(entry.info.Mode)}</td>
+              <td className="py-2">{ModeForDisplay(entry.info.Mode)}</td>
+              <td className="px-2 py-2 hover:scale-125">
+                <GoSearch
+                  onClick={(e) => {
+                    setShowPreview(true);
+                    setSelectedIndex(idx);
+                    e.stopPropagation();
+                  }}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
