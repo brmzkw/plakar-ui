@@ -139,9 +139,9 @@ export default function SnapshotsListPage({}) {
               ref={(el) => {
                 rowRefs.current[idx] = el;
               }}
-              className={classNames({
+              className={classNames("cursor-pointer", {
                 "odd:bg-white even:bg-blue-50": selected !== idx,
-                "cursor-pointer bg-slate-600 text-white": selected === idx,
+                "bg-slate-600 text-white": selected === idx,
               })}
               key={snapshot.IndexID}
               onClick={() => router.push(`/snapshots/${snapshot.IndexID}`)}

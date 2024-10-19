@@ -27,6 +27,8 @@ function FilePreview({ file }: FilePreviewProps) {
   return (
     <>
       <h1 className="text-xl font-bold">{file.info.Name}</h1>
+      <div className="min-h-full bg-red-300">xx</div>
+      {/* <iframe src="http://localhost:30112/raw/16d5fab3-1494-4848-9433-c1d5d586ba4a:/Users/niluje/Desktop/screens/Screenshot%202024-10-19%20at%2022.08.29.png"></iframe> */}
     </>
   );
 }
