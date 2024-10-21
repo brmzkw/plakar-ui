@@ -1,5 +1,4 @@
 import Dashboard from "~/components/Dashboard";
-import classNames from "classnames";
 import prettyBytes from "pretty-bytes";
 import type { Directory } from "~/api/types/browse";
 import { DateForDisplay, ModeForDisplay } from "~/utils/display";
@@ -24,7 +23,6 @@ function FilePreview({ file }: FilePreviewProps) {
       </p>
     );
   }
-  console.log(file.rootdir);
   return (
     <div className="h-full">
       <h1 className="text-xl font-bold">{file.info.Name}</h1>
@@ -50,7 +48,7 @@ type SnapshotBrowserProps = {
 };
 
 function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+  const [selected, setSelected] = useState<TreeEntryType | null>(null);
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
   const [showPreview, setShowPreview] = useState(false);
   const { data } = useQuery({
@@ -82,45 +80,38 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
     },
   });
 
-  let selected: TreeEntryType | undefined;
-  if (selectedIndex !== undefined && data?.[selectedIndex]) {
-    selected = data[selectedIndex];
-  }
+  const getSelectedIndex = () => {
+    const ret = rowRefs.current.findIndex(
+      (ref) => ref === document.activeElement,
+    );
+    return ret;
+  };
 
   // Hook to change the current selection.
   useEffect(() => {
-    // Reset the selection on path change.
-    setSelectedIndex(undefined);
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!data) {
         return;
       }
 
+      const selectedIndex = getSelectedIndex();
+
       switch (event.key) {
         case "ArrowUp":
-          setSelectedIndex((prev) => {
-            switch (prev) {
-              case undefined:
-                return 0;
-              case 0:
-                return data.length - 1;
-              default:
-                return prev - 1;
-            }
-          });
+          if (selectedIndex === -1) {
+            rowRefs.current[0]?.focus();
+          } else if (selectedIndex === 0) {
+            rowRefs.current[data.length - 1]?.focus();
+          } else {
+            rowRefs.current[selectedIndex - 1]?.focus();
+          }
           break;
         case "ArrowDown":
-          setSelectedIndex((prev) => {
-            switch (prev) {
-              case undefined:
-                return 0;
-              case data.length - 1:
-                return 0;
-              default:
-                return prev + 1;
-            }
-          });
+          if (selectedIndex === -1 || selectedIndex === data.length - 1) {
+            rowRefs.current[0]?.focus();
+          } else {
+            rowRefs.current[selectedIndex + 1]?.focus();
+          }
           break;
       }
     };
@@ -128,17 +119,23 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [data, path, setSelectedIndex, setPath]);
+  }, [data, path, setPath]);
 
   // Hook to enter in a directory
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!data || selected === undefined) {
+      if (!data) {
         return;
       }
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === -1) {
+        return;
+      }
+
       switch (event.key) {
         case "ArrowRight":
         case "Enter":
+          const selected = data[selectedIndex];
           if (selected && selected.type === "directory") {
             setPath(`${path}${selected.info.Name}/`);
           }
@@ -149,7 +146,7 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selected, data, path, setPath]);
+  }, [data, path, setPath]);
 
   // Hook to exit from a directory
   useEffect(() => {
@@ -183,26 +180,38 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
     };
   }, [path, setPath]);
 
-  // Scroll to the selected row
   useEffect(() => {
-    if (selectedIndex !== undefined && rowRefs.current[selectedIndex]) {
-      const element = rowRefs.current[selectedIndex];
-      const rect = element.getBoundingClientRect();
-
-      // Check if the element is within the visible part of the page, to avoid scrolling if it's already visible.
-      const isVisible =
-        rect.top >= 0 &&
-        rect.bottom <=
-          (window.innerHeight || document.documentElement.clientHeight);
-
-      if (!isVisible) {
-        rowRefs.current[selectedIndex]?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+    const selectedIndex = getSelectedIndex();
+    if (selectedIndex === -1) {
+      setSelected(null);
+    } else {
+      const item = data?.[selectedIndex];
+      if (item) {
+        setSelected(item);
       }
     }
-  }, [selectedIndex]);
+  }, [data]);
+
+  useEffect(() => {
+    const handleFocusChange = () => {
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === -1) {
+        setSelected(null);
+      } else {
+        const item = data?.[selectedIndex];
+        if (item && item.type === "file") {
+          setSelected(item);
+        } else {
+          setSelected(null);
+        }
+      }
+    };
+
+    window.addEventListener("focusin", handleFocusChange);
+    return () => {
+      window.removeEventListener("focusin", handleFocusChange);
+    };
+  }, [data]);
 
   if (!data) {
     return <div>Loading…</div>;
@@ -223,14 +232,12 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
         <tbody>
           {data.map((entry, idx) => (
             <tr
+              tabIndex={0}
               ref={(el) => {
                 rowRefs.current[idx] = el;
               }}
               key={entry.info.Name}
-              className={classNames("cursor-pointer", {
-                "odd:bg-white even:bg-blue-50": selected !== entry,
-                "bg-slate-600 text-white": selected === entry,
-              })}
+              className="cursor-pointer odd:bg-white even:bg-blue-50 focus:bg-slate-600 focus:text-white"
               onClick={() => setPath(`${path}${entry.info.Name}/`)}
             >
               <td className="flex gap-1 px-2 py-2 align-middle">
@@ -253,7 +260,6 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
                   <GoSearch
                     onClick={(e) => {
                       setShowPreview(true);
-                      setSelectedIndex(idx);
                       e.stopPropagation();
                     }}
                   />
@@ -265,9 +271,7 @@ function SnapshotBrowser({ snapshotId, path, setPath }: SnapshotBrowserProps) {
       </table>
 
       {showPreview && (
-        <div className="flex-1">
-          <FilePreview file={selected} />
-        </div>
+        <div className="flex-1">{<FilePreview file={selected} />}</div>
       )}
     </div>
   );

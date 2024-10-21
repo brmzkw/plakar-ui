@@ -9,11 +9,9 @@ import {
 import { GoDownload, GoFile, GoFileDirectory } from "react-icons/go";
 import { listSnapshots } from "~/api/snapshots";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import classNames from "classnames";
+import { useEffect, useRef } from "react";
 
 export default function SnapshotsListPage({}) {
-  const [selected, setSelected] = useState<number | undefined>();
   const { data } = useQuery({
     queryKey: ["snapshots"],
     queryFn: listSnapshots,
@@ -21,39 +19,40 @@ export default function SnapshotsListPage({}) {
   const router = useRouter();
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
 
-  useEffect(() => {
-    // Reset the selection on path change.
-    setSelected(undefined);
+  const getSelectedIndex = () => {
+    const ret = rowRefs.current.findIndex(
+      (ref) => ref === document.activeElement,
+    );
+    return ret;
+  };
 
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!data) {
         return;
       }
 
+      const selectedIndex = getSelectedIndex();
+
       switch (event.key) {
         case "ArrowUp":
-          setSelected((prev) => {
-            switch (prev) {
-              case undefined:
-                return 0;
-              case 0:
-                return data.Headers.length - 1;
-              default:
-                return prev - 1;
-            }
-          });
+          if (selectedIndex === -1) {
+            rowRefs.current[0]?.focus();
+          } else if (selectedIndex === 0) {
+            rowRefs.current[data.Headers.length - 1]?.focus();
+          } else {
+            rowRefs.current[selectedIndex - 1]?.focus();
+          }
           break;
         case "ArrowDown":
-          setSelected((prev) => {
-            switch (prev) {
-              case undefined:
-                return 0;
-              case data.Headers.length - 1:
-                return 0;
-              default:
-                return prev + 1;
-            }
-          });
+          if (
+            selectedIndex === -1 ||
+            selectedIndex === data.Headers.length - 1
+          ) {
+            rowRefs.current[0]?.focus();
+          } else {
+            rowRefs.current[selectedIndex + 1]?.focus();
+          }
           break;
       }
     };
@@ -61,18 +60,22 @@ export default function SnapshotsListPage({}) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [data, setSelected]);
+  }, [data]);
 
   // Hook to enter in a snapshot
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!data || selected === undefined) {
+      if (!data) {
         return;
       }
       switch (event.key) {
         case "ArrowRight":
         case "Enter":
-          const snapshot = data.Headers[selected];
+          const selectedIndex = getSelectedIndex();
+          if (selectedIndex === -1) {
+            return;
+          }
+          const snapshot = data.Headers[selectedIndex];
           if (!snapshot) {
             return;
           }
@@ -84,28 +87,7 @@ export default function SnapshotsListPage({}) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selected, data, router]);
-
-  // Scroll to the selected row
-  useEffect(() => {
-    if (selected !== undefined && rowRefs.current[selected]) {
-      const element = rowRefs.current[selected];
-      const rect = element.getBoundingClientRect();
-
-      // Check if the element is within the visible part of the page, to avoid scrolling if it's already visible.
-      const isVisible =
-        rect.top >= 0 &&
-        rect.bottom <=
-          (window.innerHeight || document.documentElement.clientHeight);
-
-      if (!isVisible) {
-        rowRefs.current[selected]?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }
-  }, [selected]);
+  }, [data, router]);
 
   if (!data) {
     return <div>Loading…</div>;
@@ -139,10 +121,8 @@ export default function SnapshotsListPage({}) {
               ref={(el) => {
                 rowRefs.current[idx] = el;
               }}
-              className={classNames("cursor-pointer", {
-                "odd:bg-white even:bg-blue-50": selected !== idx,
-                "bg-slate-600 text-white": selected === idx,
-              })}
+              tabIndex={0}
+              className="cursor-pointer odd:bg-white even:bg-blue-50 focus:bg-slate-600 focus:text-white"
               key={snapshot.IndexID}
               onClick={() => router.push(`/snapshots/${snapshot.IndexID}`)}
             >
