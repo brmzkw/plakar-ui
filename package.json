@@ -4,12 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3001",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-router": "^1.76.1",
+    "@tanstack/router-devtools": "^1.76.1",
+    "@tanstack/router-plugin": "^1.76.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
