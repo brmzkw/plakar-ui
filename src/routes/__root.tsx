@@ -1,5 +1,7 @@
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import { Breadcrumbs } from "~/components/Breadcrumbs";
 import Dashboard from "~/components/Dashboard";
+import SearchBar from "~/components/SearchBar";
 const activeProps = {
   style: {
     fontWeight: "bold",
@@ -7,6 +9,9 @@ const activeProps = {
 };
 export const Route = createRootRoute({
   component: App,
+  loader: async () => ({
+    crumb: "Homepage",
+  }),
 });
 
 function App() {
@@ -25,6 +30,8 @@ function App() {
             </Link>
           </li>
         </ul>
+        <Breadcrumbs />
+        <SearchBar />
         <Outlet />
       </Dashboard>
     </>

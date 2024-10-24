@@ -3,19 +3,22 @@ import { getPokemon } from "~/api/pokemon";
 
 export const Route = createFileRoute("/pokemon/$id")({
   loader: async ({ params }) => {
-    return await getPokemon(params.id);
+    const pokemon = await getPokemon(params.id);
+    return {
+      pokemon,
+      crumb: pokemon.name,
+    };
   },
-
   component: Pokemon,
 });
 
 function Pokemon() {
   const params = Route.useParams();
-  const data = Route.useLoaderData();
+  const { pokemon } = Route.useLoaderData();
 
   return (
     <div>
-      Hello /pokemon/{params.id}! You are {data.name} :)
+      Hello /pokemon/{params.id}! You are {pokemon.name} :)
     </div>
   );
 }

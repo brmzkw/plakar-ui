@@ -11,11 +11,17 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as PokemonImport } from './routes/pokemon'
 import { Route as IndexImport } from './routes/index'
-import { Route as PokemonIndexImport } from './routes/pokemon/index'
 import { Route as PokemonIdImport } from './routes/pokemon/$id'
 
 // Create/Update Routes
+
+const PokemonRoute = PokemonImport.update({
+  id: '/pokemon',
+  path: '/pokemon',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -23,16 +29,10 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const PokemonIndexRoute = PokemonIndexImport.update({
-  id: '/pokemon/',
-  path: '/pokemon/',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const PokemonIdRoute = PokemonIdImport.update({
-  id: '/pokemon/$id',
-  path: '/pokemon/$id',
-  getParentRoute: () => rootRoute,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PokemonRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -46,63 +46,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/pokemon/$id': {
-      id: '/pokemon/$id'
-      path: '/pokemon/$id'
-      fullPath: '/pokemon/$id'
-      preLoaderRoute: typeof PokemonIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/pokemon/': {
-      id: '/pokemon/'
+    '/pokemon': {
+      id: '/pokemon'
       path: '/pokemon'
       fullPath: '/pokemon'
-      preLoaderRoute: typeof PokemonIndexImport
+      preLoaderRoute: typeof PokemonImport
       parentRoute: typeof rootRoute
+    }
+    '/pokemon/$id': {
+      id: '/pokemon/$id'
+      path: '/$id'
+      fullPath: '/pokemon/$id'
+      preLoaderRoute: typeof PokemonIdImport
+      parentRoute: typeof PokemonImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface PokemonRouteChildren {
+  PokemonIdRoute: typeof PokemonIdRoute
+}
+
+const PokemonRouteChildren: PokemonRouteChildren = {
+  PokemonIdRoute: PokemonIdRoute,
+}
+
+const PokemonRouteWithChildren =
+  PokemonRoute._addFileChildren(PokemonRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/pokemon': typeof PokemonRouteWithChildren
   '/pokemon/$id': typeof PokemonIdRoute
-  '/pokemon': typeof PokemonIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pokemon': typeof PokemonRouteWithChildren
   '/pokemon/$id': typeof PokemonIdRoute
-  '/pokemon': typeof PokemonIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/pokemon': typeof PokemonRouteWithChildren
   '/pokemon/$id': typeof PokemonIdRoute
-  '/pokemon/': typeof PokemonIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/pokemon/$id' | '/pokemon'
+  fullPaths: '/' | '/pokemon' | '/pokemon/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/pokemon/$id' | '/pokemon'
-  id: '__root__' | '/' | '/pokemon/$id' | '/pokemon/'
+  to: '/' | '/pokemon' | '/pokemon/$id'
+  id: '__root__' | '/' | '/pokemon' | '/pokemon/$id'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PokemonIdRoute: typeof PokemonIdRoute
-  PokemonIndexRoute: typeof PokemonIndexRoute
+  PokemonRoute: typeof PokemonRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PokemonIdRoute: PokemonIdRoute,
-  PokemonIndexRoute: PokemonIndexRoute,
+  PokemonRoute: PokemonRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -118,18 +127,21 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/pokemon/$id",
-        "/pokemon/"
+        "/pokemon"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/pokemon/$id": {
-      "filePath": "pokemon/$id.tsx"
+    "/pokemon": {
+      "filePath": "pokemon.tsx",
+      "children": [
+        "/pokemon/$id"
+      ]
     },
-    "/pokemon/": {
-      "filePath": "pokemon/index.tsx"
+    "/pokemon/$id": {
+      "filePath": "pokemon/$id.tsx",
+      "parent": "/pokemon"
     }
   }
 }

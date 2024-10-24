@@ -1,13 +1,19 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { getPokemonList } from "../../api/pokemon";
+import { getPokemonList } from "../api/pokemon";
 
-export const Route = createFileRoute("/pokemon/")({
+export const Route = createFileRoute("/pokemon")({
   component: PokemonList,
-  loader: getPokemonList,
+  loader: async () => {
+    const pokemons = await getPokemonList();
+    return {
+      pokemons,
+      crumb: "Pokemons",
+    };
+  },
 });
 
 function PokemonList() {
-  const pokemons = Route.useLoaderData();
+  const { pokemons } = Route.useLoaderData();
   return (
     <>
       <h2>List all Pokemons</h2>
