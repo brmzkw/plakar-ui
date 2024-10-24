@@ -1,24 +1,3 @@
-// import { createFileRoute } from "@tanstack/react-router";
-// import { getPokemon } from "~/api/pokemon";
-
-// export const Route = createFileRoute("/pokemon/$id")({
-//   loader: async ({ params }) => {
-//     return await getPokemon(params.id);
-//   },
-
-//   component: () => {
-//     const params = Route.useParams();
-//     return <div>Hello /pokemon/{params.id}! </div>;
-//   },
-// });
-
-// function Pokemon() {
-//   const params = Route.useParams();
-//   // const data = Route.useLoaderData();
-
-//   return <div>Hello /pokemon/{params.id}! </div>;
-// }
-
 import { createFileRoute } from "@tanstack/react-router";
 import { getPokemon } from "~/api/pokemon";
 
@@ -32,7 +11,11 @@ export const Route = createFileRoute("/pokemon/$id")({
 
 function Pokemon() {
   const params = Route.useParams();
-  // const data = Route.useLoaderData();
+  const data = Route.useLoaderData();
 
-  return <div>Hello /pokemon/{params.id}! </div>;
+  return (
+    <div>
+      Hello /pokemon/{params.id}! You are {data.name} :)
+    </div>
+  );
 }
